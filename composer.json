@@ -1,0 +1,26 @@
+{
+	"name": "expresscore/forms",
+	"license": "MIT",
+	"description": "",
+	"require": {
+		"php": ">=8.1",
+		"phpunit/phpunit": "9.5.*",
+		"symfony/var-dumper": "5.3.*",
+		"smarty/smarty": "4.0.*"
+	},
+	"keywords": ["library", "orm", "db", "database"],
+	"homepage": "https://devsprint.pl",
+	"authors": [
+		{
+			"name": "Marcin Stodulski",
+			"homepage": "https://devsprint.pl",
+			"role": "Developer"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"expresscore\\forms\\": "src",
+			"test\\forms\\helpers\\": "tests/helpers"
+		}
+	}
+}
