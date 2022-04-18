@@ -219,17 +219,49 @@ class Form
                         $subformRows = [];
                         $subformView->setType('collection');
                         $subformView->setOptions($formField->getOptions());
+
                         foreach ($formField->getFields() as $index => $field) {
                             $newFormView = new FormView();
                             foreach ($field as $singleFieldName => $singleField) {
                                 $singleFieldType = $singleField->getType();
                                 $singleSubformView = new FormView();
-                                $this->defineValuesForSubformView($singleSubformView, $singleFieldType, $singleField, $path, [$fieldName, $index, $singleFieldName], FormErrorSource::formErrorFields);
+                                $this->defineValuesForSubformView($singleSubformView,
+                                    $singleFieldType,
+                                    $singleField,
+                                    $path,
+                                    [$fieldName, $index, $singleFieldName],
+                                    FormErrorSource::formErrorFields
+                                );
+
                                 $newFormView->addField($singleFieldName, $singleSubformView);
                             }
 
                             $subformRows[$index] = $newFormView;
                         }
+
+                        $mockObjectClass = $formField->getOptions()['entityClass'];
+                        $mockFormClass = $formField->getOptions()['class'];
+                        $mockObject = new $mockObjectClass();
+                        /** @var self $mockForm */
+                        $mockForm = new $mockFormClass($mockObject);
+
+
+                        $mockFormView = new FormView();
+                        foreach ($mockForm->getFields() as $singleFieldName => $singleField) {
+                            $singleFieldType = $singleField->getType();
+                            $singleSubformView = new FormView();
+                            $this->defineValuesForSubformView($singleSubformView,
+                                $singleFieldType,
+                                $singleField,
+                                $path,
+                                [$fieldName, '[__INDEX__]', $singleFieldName],
+                                FormErrorSource::formErrorFields
+                            );
+
+                            $mockFormView->addField($singleFieldName, $singleSubformView);
+                        }
+
+                        $subformView->setPrototype($mockFormView);
 
                         foreach ($subformRows as $index => $subformRow) {
                             $subformView->addField($index, $subformRow);
@@ -237,7 +269,13 @@ class Form
 
                         break;
                     default:
-                        $this->defineValuesForSubformView($subformView, $fieldType, $formField, $path, [$fieldName], FormErrorSource::formField);
+                        $this->defineValuesForSubformView($subformView,
+                            $fieldType,
+                            $formField,
+                            $path,
+                            [$fieldName],
+                            FormErrorSource::formField
+                        );
                         break;
                 }
 
@@ -337,9 +375,7 @@ class Form
                             }
                         }
                     } elseif ((isset($interfaces[CollectionFieldTypeInterface::class]))) {
-
                         $options = $formField->getOptions();
-
 
                         if (!isset($options['mapped']) || ($options['mapped'] === true)) {
                             if (isset($options['class'])) {
@@ -397,6 +433,13 @@ class Form
 
                                         if (!is_iterable($collection)) throw new Exception('Value must be iterable.');
                                         if (is_object($collection) && is_subclass_of($collection, Iterator::class)) $collection = iterator_to_array($collection);
+                                    }
+
+                                    $collectionPrototype = $collection;
+                                    $collection = [];
+                                    $arrayKeys = array_keys($formField->getFields());
+                                    foreach ($collectionPrototype as $key => $collectionPrototypeElement) {
+                                        $collection[$arrayKeys[$key]] = $collectionPrototypeElement;
                                     }
 
                                     foreach ($formField->getFields() as $fieldIndex => $fields) {
@@ -578,7 +621,9 @@ class Form
         return true;
     }
 
-    private function defineValuesForSubformView(FormView $subformView, SimpleFieldTypeInterface|string $fieldType, FormField $formField, array $path, array $thisFieldPath, FormErrorSource $getErrorFrom)
+    private function defineValuesForSubformView(FormView $subformView, SimpleFieldTypeInterface|string $fieldType,
+                                                FormField $formField, array $path, array $thisFieldPath,
+                                                FormErrorSource $getErrorFrom)
     {
         $subformView->setType($fieldType::getAlias());
         $subformView->setValue($formField->getFormValue());

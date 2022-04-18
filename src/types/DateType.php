@@ -13,17 +13,13 @@ namespace expresscore\forms\types;
 use DateTime;
 use expresscore\forms\FormError;
 
-class DateTimeType implements SimpleFieldTypeInterface {
+class DateType implements SimpleFieldTypeInterface {
 
     //metoda zamieniająca wartość z formularza na wartość dla encji
     public function transform($data) : ?DateTime
     {
         if (trim($data) !== '') {
-            $res = DateTime::createFromFormat('Y-m-d H:i:s', $data);
-            if (!$res) {
-                $res = DateTime::createFromFormat('Y-m-d H:i', $data);
-            }
-            return $res;
+            return DateTime::createFromFormat('Y-m-d', $data);
         } else {
             return null;
         }
@@ -33,7 +29,7 @@ class DateTimeType implements SimpleFieldTypeInterface {
     public function reverse($data) : ?string
     {
         if ($data instanceof DateTime) {
-            return $data->format('Y-m-d H:i:s');
+            return $data->format('Y-m-d');
         } else {
             return $data;
         }
@@ -41,7 +37,7 @@ class DateTimeType implements SimpleFieldTypeInterface {
 
     public static function getAlias(): string
     {
-        return 'dateTimeType';
+        return 'dateType';
     }
 
     public function validate($data, bool $nullable) : ?FormError
@@ -53,7 +49,7 @@ class DateTimeType implements SimpleFieldTypeInterface {
             $formError->setCurrentValue($data);
             $formError->setErrorMessage('Value cannot be empty.');
         } elseif (trim($data) != '') {
-            if ((DateTime::createFromFormat('Y-m-d H:i:s', $data) === false) && (DateTime::createFromFormat('Y-m-d H:i', $data) === false)) {
+            if (DateTime::createFromFormat('Y-m-d', $data) === false) {
                 $formError = new FormError();
                 $formError->setCurrentValue($data);
                 $formError->setErrorMessage('Value is not valid.');

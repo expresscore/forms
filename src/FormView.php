@@ -20,6 +20,7 @@ class FormView
     protected array $fields = [];
     protected array $path = [];
     protected ?FormError $error = null;
+    protected ?FormView $prototype = null;
 
     public function setName(?string $name): void
     {
@@ -105,5 +106,15 @@ class FormView
     public function setError(?FormError $error): void
     {
         $this->error = $error;
+    }
+
+    public function getPrototype(): ?FormView
+    {
+        return $this->prototype;
+    }
+
+    public function setPrototype(?FormView $prototype): void
+    {
+        $this->prototype = $prototype;
     }
 }
