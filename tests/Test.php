@@ -373,7 +373,7 @@ class Test extends TestCase
         $this->assertNull($fieldName->getValue());
         $this->assertEquals('Data wysyłki', $fieldName->getOptions()['label']);
         $this->assertIsCallable($fieldName->getOptions()['validator']);
-        
+
         $formField = $formView->getField('mainCategory');
         $this->assertInstanceOf(FormView::class, $formField);
         $this->assertEquals('invoice[mainCategory]', $formField->getName());

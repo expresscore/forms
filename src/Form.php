@@ -154,37 +154,10 @@ class Form
 
                 $formField->setValue($formValues);
                 $formField->setFormValue($formValues);
-                $this->fields[$fieldName] = $formField;
             }
 
             $this->fields[$fieldName] = $formField;
 
-//        } elseif(isset($interfaces[EntityFieldTypeInterface::class])) {
-//            if (is_subclass_of($options['class'], self::class)) {
-//                //formularz reprezentujący pojedynczą encję
-//                /** @var self $form */
-//                $form = new $typeObject();
-//                /** @var FormField $field */
-//                foreach ($form->getFields() as $field) {
-//                    $formField = new FormField($field->getFieldName(), $field->getType(), $field->getOptions());
-//
-//                    if (isset($this->entity)) {
-//                        $formField->setValue($this->getValueFromEntity($this->entity, $field->getFieldName(), $field->getType(), $field->getOptions()));
-//                        $formField->setFormValue($this->getValueFromEntity($this->entity, $field->getFieldName(), $field->getType(), $field->getOptions()));
-//                    }
-//
-//                    $this->fields[$fieldName][$field->getFieldName()] = $formField;
-//                }
-//            } else {
-//                //id encji
-//                $formField = new FormField($fieldName, $type, $options);
-//                if (isset($this->entity)) {
-//                    $formField->setValue((string)$this->entity);
-//                    $formField->setFormValue($this->getValueFromEntity($this->entity, 'id', $type, $options));
-//                }
-//
-//                $this->fields[$fieldName] = $formField;
-//            }
         } elseif (isset($interfaces[NoValueFieldTypeInterface::class])) {
             //pojedyncze pole nieprzekazujące wartości (przycisk na przykład)
             $formField = new FormField($fieldName, $type, $options);
@@ -399,6 +372,7 @@ class Form
 
                                     $formField->setFields($formFieldFields);
 
+                                    $collection = [];
                                     if (isset($this->entity)) {
                                         $getter = 'get' . ucfirst($formField->getFieldName());
                                         $setter = 'set' . ucfirst($formField->getFieldName());
@@ -438,8 +412,9 @@ class Form
                                     $collectionPrototype = $collection;
                                     $collection = [];
                                     $arrayKeys = array_keys($formField->getFields());
+
                                     foreach ($collectionPrototype as $key => $collectionPrototypeElement) {
-                                        $collection[$arrayKeys[$key]] = $collectionPrototypeElement;
+                                        $collection[$arrayKeys[array_search ($key, $arrayKeys)]] = $collectionPrototypeElement;
                                     }
 
                                     foreach ($formField->getFields() as $fieldIndex => $fields) {
@@ -448,7 +423,7 @@ class Form
                                             $collectionRequestFieldValue = $requestFieldValue[$fieldIndex][$collectionFieldName];
                                             $valid = $this->validateFormFieldAndSetValue($collectionField, $collectionRequestFieldValue);
 
-                                            if ($valid && isset($collection)) {
+                                            if ($valid && isset($collection) && !empty($collection)) {
                                                 $setter = 'set' . ucfirst($collectionFieldName);
                                                 if (!method_exists($collection[$fieldIndex], $setter)) throw new Exception('Class ' . get_class($collection[$fieldIndex]) . ' must have a ' . $setter . '() method');
                                                 $collection[$fieldIndex]->$setter($collectionField->getValue());
@@ -517,7 +492,7 @@ class Form
                                     $transformedValue = $this->dbBridge->transform($formField, true, $formField->getFormValue());
                                 } else {
                                     //a na końcu próbujemy nadać wartość, jeśli nie jest zdefiniowana funkcja transform dla pola formularza oraz nie ma dbBridge
-                                    $transformedValue = $typeObject->transform($formField->getFormValue(), $options['nullable']);
+                                    $transformedValue = $typeObject->transform($formField->getFormValue());
                                 }
 
                                 if ($transformedValue instanceof FormError) {
@@ -537,7 +512,7 @@ class Form
                         }
                     }
                 } elseif ($formField instanceof self) {
-                    if (isset($this->entity) && ($this->entity !== null)) {
+                    if (isset($this->entity)) {
 
                         $getter = 'get' . ucfirst($formField->formName);
                         $setter = 'set' . ucfirst($formField->formName);
@@ -569,9 +544,7 @@ class Form
         return $this->errorsForFields[$fieldId] ?? null;
     }
 
-    /**
-     * @return array
-     */
+    /** @return array */
     public function getErrorsForFields(): array
     {
         return $this->errorsForFields;
@@ -658,7 +631,7 @@ class Form
     }
 
     /** @throws Exception */
-    private function getErrors(array $fields, &$errorsArray = [], $path = [])
+    private function getErrors(array $fields, &$errorsArray = [], $path = []): array
     {
         /** @var FormField $formField */
         foreach ($fields as $fieldName => $formField) {

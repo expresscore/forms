@@ -29,7 +29,8 @@ class FloatType implements SimpleFieldTypeInterface {
     //metoda zamieniająca wartość z encji na wartość do formularza
     public function reverse($data) : ?string
     {
-        return number_format($data, 2, '.'. '');
+        if ($data == null) return null;
+        return number_format($data, 2, '.', '');
     }
 
     public static function getAlias(): string

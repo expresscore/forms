@@ -8,7 +8,7 @@ class InvoicePosition
 {
     private ?int $id = null;
     private ?string $name = null;
-    private ?float $quantity;
+    private ?float $quantity = null;
     private ?DateTime $sendDate = null;
     private ?float $price = null;
 
