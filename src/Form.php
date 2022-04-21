@@ -406,7 +406,7 @@ class Form
                                         $this->entity->$setter($collection);
 
                                         if (!is_iterable($collection)) throw new Exception('Value must be iterable.');
-                                        if (is_object($collection) && is_subclass_of($collection, Iterator::class)) $collection = iterator_to_array($collection);
+                                        if (is_subclass_of($collection, Iterator::class)) $collection = iterator_to_array($collection);
                                     }
 
                                     $collectionPrototype = $collection;
@@ -555,7 +555,7 @@ class Form
         return $this->entity ?? null;
     }
 
-    public function setEntity(object $entity)
+    public function setEntity(object $entity) : void
     {
         $this->entity = $entity;
     }
@@ -596,7 +596,7 @@ class Form
 
     private function defineValuesForSubformView(FormView $subformView, SimpleFieldTypeInterface|string $fieldType,
                                                 FormField $formField, array $path, array $thisFieldPath,
-                                                FormErrorSource $getErrorFrom)
+                                                FormErrorSource $getErrorFrom) : void
     {
         $subformView->setType($fieldType::getAlias());
         $subformView->setValue($formField->getFormValue());

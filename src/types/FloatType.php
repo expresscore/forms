@@ -14,7 +14,7 @@ use expresscore\forms\FormError;
 
 class FloatType implements SimpleFieldTypeInterface {
 
-    private function unformatFloat($data) : mixed
+    private function unformatFloat($data) : string
     {
         $value = str_replace(',', '.', $data);
         return str_replace(' ', '', $value);
